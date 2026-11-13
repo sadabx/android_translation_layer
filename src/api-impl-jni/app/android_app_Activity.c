@@ -140,14 +140,14 @@ static void activity_update_current(JNIEnv *env)
 
 void activity_window_ready(void)
 {
-	JNIEnv *env = get_jni_env();
+	if (!activity_current)
+		return;
 
-	for (GList *l = activity_backlog; l != NULL; l = l->next) {
-		J__Activity__onWindowFocusChanged(env, l->data, true);
-		if ((*env)->ExceptionCheck(env)) {
-			(*env)->ExceptionDescribe(env);
-			(*env)->ExceptionClear(env);
-		}
+	JNIEnv *env = get_jni_env();
+	J__Activity__onWindowFocusChanged(env, activity_current, true);
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
 	}
 }
 
@@ -200,6 +200,8 @@ static gboolean delayed_close_window(gpointer window)
 
 void activity_start(JNIEnv *env, jobject activity_object)
 {
+	GList *prev_backlog = activity_backlog;
+
 	if (activity_current)
 		activity_unfocus(env, activity_current);
 	activity_current = NULL;
@@ -221,7 +223,13 @@ void activity_start(JNIEnv *env, jobject activity_object)
 		(*env)->ExceptionClear(env);
 	}
 
-	activity_backlog = g_list_prepend(activity_backlog, _REF(activity_object));
+	if (activity_backlog == prev_backlog) {
+		activity_backlog = g_list_prepend(activity_backlog, _REF(activity_object));
+	} else {
+		/* One or more activities were started during onCreate.
+		 * Insert this activity behind them (before prev_backlog in the backlog). */
+		activity_backlog = g_list_insert_before(activity_backlog, prev_backlog, _REF(activity_object));
+	}
 
 	GtkWidget *decor_view = get_decor_view(env, activity_object);
 	GtkStack *stack = GTK_STACK(gtk_window_get_child(window));
