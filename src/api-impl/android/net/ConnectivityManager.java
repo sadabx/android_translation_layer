@@ -59,9 +59,18 @@ public class ConnectivityManager {
 		return capabilities;
 	}
 
-	public void registerDefaultNetworkCallback(NetworkCallback cb, Handler hdl) {}
+	public void registerDefaultNetworkCallback(NetworkCallback cb, Handler hdl) {
+		if (cb != null) {
+			if (nativeGetNetworkAvailable()) {
+				cb.onAvailable(getActiveNetwork());
+			}
+			registerNetworkCallback(null, cb);
+		}
+	}
 
-	public void registerDefaultNetworkCallback(NetworkCallback cb) {}
+	public void registerDefaultNetworkCallback(NetworkCallback cb) {
+		registerDefaultNetworkCallback(cb, null);
+	}
 
 	public ProxyInfo getDefaultProxy() { return null; }
 

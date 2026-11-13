@@ -237,10 +237,10 @@ JNIEXPORT void JNICALL Java_android_widget_TextView_native_1setText
 
 /*
  * Class:     android_widget_TextView
- * Method:    setTextSize
+ * Method:    native_setTextSize
  * Signature: (F)V
  */
-JNIEXPORT void JNICALL Java_android_widget_TextView_setTextSize
+JNIEXPORT void JNICALL Java_android_widget_TextView_native_1setTextSize
   (JNIEnv *, jobject, jfloat);
 
 /*
@@ -250,6 +250,14 @@ JNIEXPORT void JNICALL Java_android_widget_TextView_setTextSize
  */
 JNIEXPORT void JNICALL Java_android_widget_TextView_native_1setTextColor
   (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     android_widget_TextView
+ * Method:    native_setGravity
+ * Signature: (JI)V
+ */
+JNIEXPORT void JNICALL Java_android_widget_TextView_native_1setGravity
+  (JNIEnv *, jobject, jlong, jint);
 
 /*
  * Class:     android_widget_TextView

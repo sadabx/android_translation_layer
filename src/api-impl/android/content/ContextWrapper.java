@@ -4,6 +4,7 @@ import android.atl.ATLLoadedApp;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Handler;
 import android.view.Display;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
@@ -38,7 +39,14 @@ public class ContextWrapper extends Context {
 
 	@Override
 	public ApplicationInfo getApplicationInfo() {
-		return this.baseContext.getApplicationInfo();
+		if (this.baseContext != null) {
+			return this.baseContext.getApplicationInfo();
+		}
+		ATLLoadedApp app = ATLLoadedApp.getPrimaryApplication();
+		if (app != null && app.pkg != null) {
+			return app.pkg.applicationInfo;
+		}
+		return null;
 	}
 
 	@Override
@@ -53,12 +61,26 @@ public class ContextWrapper extends Context {
 
 	@Override
 	public Resources getResources() {
-		return this.baseContext.getResources();
+		if (this.baseContext != null) {
+			return this.baseContext.getResources();
+		}
+		ATLLoadedApp app = ATLLoadedApp.getPrimaryApplication();
+		if (app != null) {
+			return app.default_resources;
+		}
+		return null;
 	}
 
 	@Override
 	public ClassLoader getClassLoader() {
-		return this.baseContext.getClassLoader();
+		if (this.baseContext != null) {
+			return this.baseContext.getClassLoader();
+		}
+		ATLLoadedApp app = ATLLoadedApp.getPrimaryApplication();
+		if (app != null) {
+			return app.class_loader;
+		}
+		return ClassLoader.getSystemClassLoader();
 	}
 
 	@Override
@@ -123,6 +145,50 @@ public class ContextWrapper extends Context {
 
 	@Override
 	public ATLLoadedApp get_atl_loaded_app() {
-		return this.baseContext.get_atl_loaded_app();
+		if (this.baseContext != null) {
+			return this.baseContext.get_atl_loaded_app();
+		}
+		return ATLLoadedApp.getPrimaryApplication();
+	}
+
+	@Override
+	public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+		if (this.baseContext != null) {
+			return this.baseContext.registerReceiver(receiver, filter);
+		}
+		return super.registerReceiver(receiver, filter);
+	}
+
+	@Override
+	public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, int flags) {
+		if (this.baseContext != null) {
+			return this.baseContext.registerReceiver(receiver, filter, flags);
+		}
+		return super.registerReceiver(receiver, filter, flags);
+	}
+
+	@Override
+	public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
+		if (this.baseContext != null) {
+			return this.baseContext.registerReceiver(receiver, filter, broadcastPermission, scheduler);
+		}
+		return super.registerReceiver(receiver, filter, broadcastPermission, scheduler);
+	}
+
+	@Override
+	public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler, int flags) {
+		if (this.baseContext != null) {
+			return this.baseContext.registerReceiver(receiver, filter, broadcastPermission, scheduler, flags);
+		}
+		return super.registerReceiver(receiver, filter, broadcastPermission, scheduler, flags);
+	}
+
+	@Override
+	public void unregisterReceiver(BroadcastReceiver receiver) {
+		if (this.baseContext != null) {
+			this.baseContext.unregisterReceiver(receiver);
+		} else {
+			super.unregisterReceiver(receiver);
+		}
 	}
 }

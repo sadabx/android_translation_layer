@@ -9,9 +9,21 @@
 
 static GtkLabel *box_get_label(JNIEnv *env, GtkWidget *box)
 {
+	if (!box)
+		return NULL;
+	if (GTK_IS_LABEL(box))
+		return GTK_LABEL(box);
+	if (GTK_IS_BUTTON(box))
+		box = gtk_button_get_child(GTK_BUTTON(box));
+	if (!box)
+		return NULL;
 	GtkWidget *label = gtk_widget_get_last_child(GTK_WIDGET(box));
+	if (!label)
+		return NULL;
 	if (!GTK_IS_LABEL(label))
 		label = gtk_widget_get_prev_sibling(label);
+	if (!label || !GTK_IS_LABEL(label))
+		return NULL;
 	return GTK_LABEL(label);
 }
 
@@ -26,7 +38,7 @@ JNIEXPORT jlong JNICALL Java_android_widget_TextView_native_1constructor(JNIEnv 
 	GtkWidget *label = gtk_label_new(text);
 	gtk_label_set_wrap(GTK_LABEL(label), TRUE);
 	gtk_label_set_xalign(GTK_LABEL(label), 0.f);
-	gtk_label_set_yalign(GTK_LABEL(label), 0.f);
+	gtk_label_set_yalign(GTK_LABEL(label), 0.5f);
 	gtk_widget_set_hexpand(label, TRUE);
 	gtk_box_append(GTK_BOX(box), label);
 	wrapper_widget_set_child(WRAPPER_WIDGET(wrapper), box);
@@ -72,22 +84,89 @@ JNIEXPORT void JNICALL Java_android_widget_TextView_native_1setTextColor(JNIEnv 
 }
 #pragma GCC diagnostic pop
 
-JNIEXPORT void JNICALL Java_android_widget_TextView_setTextSize(JNIEnv *env, jobject this, jfloat size)
+JNIEXPORT void JNICALL Java_android_widget_TextView_native_1setTextSize(JNIEnv *env, jobject this, jfloat size)
 {
-	GtkLabel *label = box_get_label(env, _PTR(_GET_LONG_FIELD(this, "widget")));
-	PangoAttrList *attrs;
+	GtkWidget *widget = GTK_WIDGET(_PTR(_GET_LONG_FIELD(this, "widget")));
+	if (!widget)
+		return;
 
-	PangoAttrList *old_attrs = gtk_label_get_attributes(label);
+	PangoAttrList *attrs;
+	PangoAttrList *old_attrs = NULL;
+
+	if (GTK_IS_TEXT(widget)) {
+		old_attrs = gtk_text_get_attributes(GTK_TEXT(widget));
+	} else {
+		GtkLabel *label = box_get_label(env, widget);
+		if (label)
+			old_attrs = gtk_label_get_attributes(label);
+	}
+
 	if (old_attrs)
 		attrs = pango_attr_list_copy(old_attrs);
 	else
 		attrs = pango_attr_list_new();
 
-	PangoAttribute *size_attr = pango_attr_size_new(size * PANGO_SCALE);
+	PangoAttribute *size_attr = pango_attr_size_new_absolute(size * PANGO_SCALE);
 	pango_attr_list_change(attrs, size_attr);
-	gtk_label_set_attributes(label, attrs);
+
+	if (GTK_IS_TEXT(widget)) {
+		gtk_text_set_attributes(GTK_TEXT(widget), attrs);
+	} else {
+		GtkLabel *label = box_get_label(env, widget);
+		if (label)
+			gtk_label_set_attributes(label, attrs);
+	}
 
 	pango_attr_list_unref(attrs);
+}
+
+JNIEXPORT void JNICALL Java_android_widget_TextView_setTextSize(JNIEnv *env, jobject this, jfloat size)
+{
+	Java_android_widget_TextView_native_1setTextSize(env, this, size);
+}
+
+JNIEXPORT void JNICALL Java_android_widget_TextView_native_1setGravity(JNIEnv *env, jobject this, jlong widget_ptr, jint gravity)
+{
+	GtkWidget *widget = GTK_WIDGET(_PTR(widget_ptr));
+	if (!widget)
+		return;
+
+	float xalign = 0.0f;
+	float yalign = 0.5f;
+	GtkJustification justify = GTK_JUSTIFY_LEFT;
+
+	int horiz = gravity & 0x07; /* Gravity.HORIZONTAL_GRAVITY_MASK */
+	if (horiz == 1) { /* CENTER_HORIZONTAL */
+		xalign = 0.5f;
+		justify = GTK_JUSTIFY_CENTER;
+	} else if (horiz == 5) { /* RIGHT */
+		xalign = 1.0f;
+		justify = GTK_JUSTIFY_RIGHT;
+	} else if (horiz == 3) { /* LEFT */
+		xalign = 0.0f;
+		justify = GTK_JUSTIFY_LEFT;
+	}
+
+	int vert = gravity & 0x70; /* Gravity.VERTICAL_GRAVITY_MASK */
+	if (vert == 0x10) { /* CENTER_VERTICAL */
+		yalign = 0.5f;
+	} else if (vert == 0x30) { /* TOP */
+		yalign = 0.0f;
+	} else if (vert == 0x50) { /* BOTTOM */
+		yalign = 1.0f;
+	}
+
+	if (GTK_IS_TEXT(widget)) {
+		g_object_set(G_OBJECT(widget), "xalign", xalign, NULL);
+		gtk_widget_set_valign(widget, (vert == 0x30) ? GTK_ALIGN_START : ((vert == 0x50) ? GTK_ALIGN_END : GTK_ALIGN_CENTER));
+	} else {
+		GtkLabel *label = box_get_label(env, widget);
+		if (label) {
+			gtk_label_set_xalign(label, xalign);
+			gtk_label_set_yalign(label, yalign);
+			gtk_label_set_justify(label, justify);
+		}
+	}
 }
 
 JNIEXPORT void JNICALL Java_android_widget_TextView_native_1set_1markup(JNIEnv *env, jobject this, jint value)

@@ -128,6 +128,15 @@ public abstract class Context {
 		provider.put("KeyGenerator.HmacSHA512", "android.security.keystore.KeyGenerator$HmacSHA512");
 		Security.addProvider(provider);
 
+		Provider conscryptProvider = new Provider("Conscrypt", 1.0, "Conscrypt provider") {};
+		conscryptProvider.put("SSLContext.SSL", "com.android.org.conscrypt.OpenSSLContextImpl");
+		conscryptProvider.put("SSLContext.TLS", "com.android.org.conscrypt.OpenSSLContextImpl");
+		conscryptProvider.put("SSLContext.TLSv1", "com.android.org.conscrypt.OpenSSLContextImpl");
+		conscryptProvider.put("SSLContext.TLSv1.1", "com.android.org.conscrypt.OpenSSLContextImpl");
+		conscryptProvider.put("SSLContext.TLSv1.2", "com.android.org.conscrypt.OpenSSLContextImpl");
+		conscryptProvider.put("SSLContext.TLSv1.3", "com.android.org.conscrypt.OpenSSLContextImpl");
+		Security.insertProviderAt(conscryptProvider, 1);
+
 		for (PackageParser.Activity receiver : primary_application.pkg.receivers) {
 			if (receiver.intents == null)
 				continue;
@@ -181,10 +190,7 @@ public abstract class Context {
 	public abstract Object getSystemService(Class<?> serviceClass) throws InstantiationException, IllegalAccessException, InvocationTargetException;
 
 	public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-		if (receiver == null)
-			return null;
-		receiverMap.put(filter, receiver);
-		return new Intent();
+		return registerReceiverInternal(receiver, filter, null, null, 0);
 	}
 
 	public Looper getMainLooper() {
@@ -559,7 +565,22 @@ public abstract class Context {
 	public abstract Context createDisplayContext(Display display);
 
 	public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
-		return registerReceiver(receiver, filter);
+		return registerReceiverInternal(receiver, filter, broadcastPermission, scheduler, 0);
+	}
+
+	public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, int flags) {
+		return registerReceiverInternal(receiver, filter, null, null, flags);
+	}
+
+	public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler, int flags) {
+		return registerReceiverInternal(receiver, filter, broadcastPermission, scheduler, flags);
+	}
+
+	protected Intent registerReceiverInternal(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler, int flags) {
+		if (receiver == null)
+			return null;
+		receiverMap.put(filter, receiver);
+		return new Intent();
 	}
 
 	public String[] fileList() {

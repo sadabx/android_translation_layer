@@ -29,8 +29,21 @@ public class TelephonyManager {
 		return 0; // PHONE_TYPE_NONE
 	}
 
-	public String getNetworkCountryIso() { return ""; }
-	public String getSimCountryIso() { return ""; }
+	public String getNetworkCountryIso() {
+		String country = java.util.Locale.getDefault().getCountry();
+		if (country != null && !country.isEmpty()) {
+			return country.toLowerCase();
+		}
+		return "bd";
+	}
+
+	public String getSimCountryIso() {
+		String country = java.util.Locale.getDefault().getCountry();
+		if (country != null && !country.isEmpty()) {
+			return country.toLowerCase();
+		}
+		return "bd";
+	}
 
 	public List getNeighboringCellInfo() {
 		return new ArrayList(0);

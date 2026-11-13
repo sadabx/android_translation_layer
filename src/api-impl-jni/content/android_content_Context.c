@@ -41,7 +41,7 @@ static void settings_changed_cb(XdpSettings *xdp_settings, gchar *namestpace, gc
 	JNIEnv *env;
 	if (!strcmp(namestpace, "org.freedesktop.appearance") && !strcmp(key, "color-scheme")) {
 		int color_sheme = g_variant_get_uint32(value);
-		g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", color_sheme == 1, NULL);
+		// g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", color_sheme == 1, NULL);
 		env = get_jni_env();
 		if (!configuration) {
 			configuration = _GET_STATIC_OBJ_FIELD(_CACHED_CLASS(Context), "sys_config", "Landroid/content/res/Configuration;");

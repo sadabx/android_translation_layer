@@ -12,11 +12,15 @@ JNIEXPORT jlong JNICALL Java_android_text_Layout_native_1constructor(JNIEnv *env
 {
 	struct AndroidPaint *android_paint = _PTR(paint);
 	PangoLayout *layout = pango_layout_new(gtk_widget_get_pango_context(window));
-	pango_layout_set_font_description(layout, android_paint->font);
-	const char *str = (*env)->GetStringUTFChars(env, text, NULL);
-	pango_layout_set_text(layout, str, -1);
-	(*env)->ReleaseStringUTFChars(env, text, str);
+	if (android_paint && android_paint->font)
+		pango_layout_set_font_description(layout, android_paint->font);
+	const char *str = text ? (*env)->GetStringUTFChars(env, text, NULL) : NULL;
+	pango_layout_set_text(layout, str ?: "", -1);
+	if (text && str)
+		(*env)->ReleaseStringUTFChars(env, text, str);
 	pango_layout_set_width(layout, width == -1 ? -1 : width * PANGO_SCALE);
+	if (width != -1)
+		pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
 	return _INTPTR(layout);
 }
 
@@ -24,6 +28,8 @@ JNIEXPORT void JNICALL Java_android_text_Layout_native_1set_1width(JNIEnv *env, 
 {
 	PangoLayout *pango_layout = _PTR(layout);
 	pango_layout_set_width(pango_layout, width * PANGO_SCALE);
+	if (width != -1)
+		pango_layout_set_wrap(pango_layout, PANGO_WRAP_WORD_CHAR);
 }
 
 JNIEXPORT jint JNICALL Java_android_text_Layout_native_1get_1width(JNIEnv *env, jobject object, jlong layout)

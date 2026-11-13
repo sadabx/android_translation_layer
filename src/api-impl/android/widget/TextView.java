@@ -4,6 +4,7 @@ import android.annotation.UnsupportedAppUsage;
 import android.atl.annotation.Export;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -54,6 +55,7 @@ public class TextView extends View {
 
 	public TextView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
+		paint.setTextSize(14 * context.getResources().getDisplayMetrics().scaledDensity);
 
 		TypedArray a = context.obtainStyledAttributes(attrs, com.android.internal.R.styleable.TextView, defStyleAttr, 0);
 		try {
@@ -79,7 +81,11 @@ public class TextView extends View {
 				setTextColor(a.getColorStateList(com.android.internal.R.styleable.TextView_textColor));
 			}
 			if (a.hasValue(com.android.internal.R.styleable.TextView_textSize)) {
-				setTextSize(a.getDimensionPixelSize(com.android.internal.R.styleable.TextView_textSize, 10));
+				setTextSize(TypedValue.COMPLEX_UNIT_PX, a.getDimensionPixelSize(com.android.internal.R.styleable.TextView_textSize, 10));
+			}
+
+			if (a.hasValue(com.android.internal.R.styleable.TextView_gravity)) {
+				setGravity(a.getInt(com.android.internal.R.styleable.TextView_gravity, Gravity.TOP | Gravity.START));
 			}
 
 			if (a.hasValue(com.android.internal.R.styleable.TextView_textStyle)) {
@@ -137,12 +143,28 @@ public class TextView extends View {
 
 	public native final void native_setText(String text);
 
-	public void setTextSize(int unit, float size) {
-		if (unit != TypedValue.COMPLEX_UNIT_SP)
-			System.out.println("setTextSize called with non-SP unit (" + unit + "), we don't currently handle that");
-		setTextSize(size);
+	public void setTextSize(float size) {
+		setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
 	}
-	public native void setTextSize(float size);
+
+	public void setTextSize(int unit, float size) {
+		Context c = getContext();
+		Resources r = (c == null) ? Resources.getSystem() : c.getResources();
+		setRawTextSize(TypedValue.applyDimension(unit, size, r.getDisplayMetrics()));
+	}
+
+	private void setRawTextSize(float size) {
+		if (size != paint.getTextSize()) {
+			paint.setTextSize(size);
+			native_setTextSize(size);
+			if (!isLayoutRequested()) {
+				requestLayout();
+				invalidate();
+			}
+		}
+	}
+
+	private native void native_setTextSize(float size);
 
 	public native final void native_setTextColor(int color);
 	public void setTextColor(int color) {
@@ -224,11 +246,22 @@ public class TextView extends View {
 
 	public Typeface getTypeface() { return null; }
 
-	public float getTextSize() { return 10; }
+	public float getTextSize() {
+		return paint.getTextSize();
+	}
 
 	public int getGravity() {
 		return gravity;
 	}
+
+	@Override
+	public void setGravity(int gravity) {
+		super.setGravity(gravity);
+		this.gravity = gravity;
+		native_setGravity(widget, gravity);
+	}
+
+	private native void native_setGravity(long widget, int gravity);
 
 	public int getCompoundPaddingTop() { return 0; }
 	public int getCompoundPaddingBottom() { return 0; }
@@ -343,23 +376,44 @@ public class TextView extends View {
 
 	public float getLetterSpacing() { return 0.f; }
 
-	public void setCompoundDrawablesRelativeWithIntrinsicBounds(int start, int top, int end, int bottom) {}
+	public void setCompoundDrawablesRelativeWithIntrinsicBounds(int start, int top, int end, int bottom) {
+		setCompoundDrawablesWithIntrinsicBounds(start, top, end, bottom);
+	}
 
-	public void setCompoundDrawablesRelativeWithIntrinsicBounds(Drawable start, Drawable top, Drawable end, Drawable bottom) {}
+	public void setCompoundDrawablesRelativeWithIntrinsicBounds(Drawable start, Drawable top, Drawable end, Drawable bottom) {
+		setCompoundDrawablesWithIntrinsicBounds(start, top, end, bottom);
+	}
 
 	public boolean getLinksClickable() { return true; }
 
 	public boolean isTextSelectable() { return true; }
 
-	public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {}
+	public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
+		android.content.Context context = getContext();
+		setCompoundDrawablesWithIntrinsicBounds(
+			left != 0 ? context.getDrawable(left) : null,
+			top != 0 ? context.getDrawable(top) : null,
+			right != 0 ? context.getDrawable(right) : null,
+			bottom != 0 ? context.getDrawable(bottom) : null);
+	}
 
-	public void setCompoundDrawablesWithIntrinsicBounds(Drawable left, Drawable top, Drawable right, Drawable bottom) {}
+	public void setCompoundDrawablesWithIntrinsicBounds(Drawable left, Drawable top, Drawable right, Drawable bottom) {
+		if (left != null) left.setBounds(0, 0, left.getIntrinsicWidth(), left.getIntrinsicHeight());
+		if (top != null) top.setBounds(0, 0, top.getIntrinsicWidth(), top.getIntrinsicHeight());
+		if (right != null) right.setBounds(0, 0, right.getIntrinsicWidth(), right.getIntrinsicHeight());
+		if (bottom != null) bottom.setBounds(0, 0, bottom.getIntrinsicWidth(), bottom.getIntrinsicHeight());
+		setCompoundDrawables(left, top, right, bottom);
+	}
 
 	public void setHint(CharSequence s) {}
 
-	public Drawable[] getCompoundDrawablesRelative() { return new Drawable[4]; }
+	public Drawable[] getCompoundDrawablesRelative() {
+		return new Drawable[] { drawableLeft, drawableTop, drawableRight, drawableBottom };
+	}
 
-	public Drawable[] getCompoundDrawables() { return new Drawable[4]; }
+	public Drawable[] getCompoundDrawables() {
+		return new Drawable[] { drawableLeft, drawableTop, drawableRight, drawableBottom };
+	}
 
 	public void setTextAppearance(int dummy) {}
 

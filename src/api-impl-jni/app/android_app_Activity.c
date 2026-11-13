@@ -50,12 +50,16 @@ static void activity_unfocus(JNIEnv *env, jobject activity)
 	}
 
 	J__Activity__onStop(env, activity);
-	if ((*env)->ExceptionCheck(env))
+	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
 
 	J__Activity__onWindowFocusChanged(env, activity, false);
-	if ((*env)->ExceptionCheck(env))
+	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
 }
 
 static void activity_focus(JNIEnv *env, jobject activity)
@@ -64,8 +68,11 @@ static void activity_focus(JNIEnv *env, jobject activity)
 		return;
 
 	J__Activity__onStart(env, activity);
-	if ((*env)->ExceptionCheck(env))
+	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+		return;
+	}
 	if (_GET_BOOL_FIELD(activity, "finishing"))
 		return;
 
@@ -74,20 +81,28 @@ static void activity_focus(JNIEnv *env, jobject activity)
 	gtk_stack_set_visible_child(stack, decor_view);
 
 	J__Activity__onResume(env, activity);
-	if ((*env)->ExceptionCheck(env))
+	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+		return;
+	}
 	if (_GET_BOOL_FIELD(activity, "finishing"))
 		return;
 
 	J__Activity__onPostResume(env, activity);
-	if ((*env)->ExceptionCheck(env))
+	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+		return;
+	}
 	if (_GET_BOOL_FIELD(activity, "finishing"))
 		return;
 
 	J__Activity__onWindowFocusChanged(env, activity, true);
-	if ((*env)->ExceptionCheck(env))
+	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
 }
 
 static void activity_update_current(JNIEnv *env)
@@ -110,8 +125,10 @@ static void activity_update_current(JNIEnv *env)
 	if (activity_current != NULL) {
 		jclass current_activity_class = (*env)->GetObjectClass(env, activity_current);
 		jmethodID current_activity_on_back_pressed_method_id = (*env)->GetMethodID(env, current_activity_class, "onBackPressed", "()V");
-		if ((*env)->ExceptionCheck(env))
+		if ((*env)->ExceptionCheck(env)) {
 			(*env)->ExceptionDescribe(env);
+			(*env)->ExceptionClear(env);
+		}
 
 		if (g_list_length(activity_backlog) > 1 || _CACHED_METHOD(Activity__onBackPressed) != current_activity_on_back_pressed_method_id) {
 			back_button_set_sensitive(true);
@@ -127,8 +144,10 @@ void activity_window_ready(void)
 
 	for (GList *l = activity_backlog; l != NULL; l = l->next) {
 		J__Activity__onWindowFocusChanged(env, l->data, true);
-		if ((*env)->ExceptionCheck(env))
+		if ((*env)->ExceptionCheck(env)) {
 			(*env)->ExceptionDescribe(env);
+			(*env)->ExceptionClear(env);
+		}
 	}
 }
 
@@ -138,14 +157,18 @@ void current_activity_back_pressed(void)
 
 	jclass current_activity_class = (*env)->GetObjectClass(env, activity_current);
 	jmethodID current_activity_on_back_pressed_method_id = (*env)->GetMethodID(env, current_activity_class, "onBackPressed", "()V");
-	if ((*env)->ExceptionCheck(env))
+	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
 
 	// Either a new activity was added to the backlog or the current activity's onBackPressed method was changed
 	if (g_list_length(activity_backlog) > 1 || _CACHED_METHOD(Activity__onBackPressed) != current_activity_on_back_pressed_method_id) {
 		J__Activity__onBackPressed(env, activity_current);
-		if ((*env)->ExceptionCheck(env))
+		if ((*env)->ExceptionCheck(env)) {
 			(*env)->ExceptionDescribe(env);
+			(*env)->ExceptionClear(env);
+		}
 	} else {
 		back_button_set_sensitive(false);
 	}
@@ -182,16 +205,21 @@ void activity_start(JNIEnv *env, jobject activity_object)
 	activity_current = NULL;
 	/* -- run the activity's onCreate -- */
 	J__Activity__onCreate(env, activity_object, NULL);
-	if ((*env)->ExceptionCheck(env))
+	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+		return;
+	}
 
 	if (_GET_BOOL_FIELD(activity_object, "finishing")) { // finish() was called before the activity was created
 		return;
 	}
 
 	J__Activity__onPostCreate(env, activity_object, NULL);
-	if ((*env)->ExceptionCheck(env))
+	if ((*env)->ExceptionCheck(env)) {
 		(*env)->ExceptionDescribe(env);
+		(*env)->ExceptionClear(env);
+	}
 
 	activity_backlog = g_list_prepend(activity_backlog, _REF(activity_object));
 

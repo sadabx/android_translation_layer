@@ -22,8 +22,15 @@ JNIEXPORT jlong JNICALL Java_android_widget_Button_native_1constructor(JNIEnv *e
 	GtkWidget *wrapper = g_object_ref(wrapper_widget_new());
 	GtkWidget *button = gtk_button_new();
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_widget_set_halign(box, GTK_ALIGN_CENTER);
+	gtk_widget_set_valign(box, GTK_ALIGN_CENTER);
+	gtk_widget_set_hexpand(box, TRUE);
+	gtk_widget_set_vexpand(box, TRUE);
 	gtk_button_set_child(GTK_BUTTON(button), box);
-	gtk_box_append(GTK_BOX(box), gtk_label_new(text));
+	GtkWidget *label = gtk_label_new(text);
+	gtk_widget_set_halign(label, GTK_ALIGN_CENTER);
+	gtk_widget_set_valign(label, GTK_ALIGN_CENTER);
+	gtk_box_append(GTK_BOX(box), label);
 	wrapper_widget_set_child(WRAPPER_WIDGET(wrapper), button);
 	wrapper_widget_set_jobject(WRAPPER_WIDGET(wrapper), env, this);
 

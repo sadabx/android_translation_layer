@@ -117,6 +117,10 @@ public class Drawable {
 		return mBounds;
 	}
 
+	public Rect getDirtyBounds() {
+		return getBounds();
+	}
+
 	@Export
 	public void draw(Canvas canvas) {
 		if (canvas instanceof GskCanvas) {

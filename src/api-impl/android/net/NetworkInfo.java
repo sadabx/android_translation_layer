@@ -55,7 +55,7 @@ public class NetworkInfo {
 	}
 
 	public boolean isAvailable() {
-		return false;
+		return state == State.CONNECTED;
 	}
 
 	public DetailedState getDetailedState() {

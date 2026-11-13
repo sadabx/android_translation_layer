@@ -44,6 +44,7 @@ JNIEXPORT jint JNICALL Java_android_util_Log_println_1native(JNIEnv *env, jobjec
 		tag = (*env)->GetStringUTFChars(env, tagObj, NULL);
 	msg = (*env)->GetStringUTFChars(env, msgObj, NULL);
 
+	fprintf(stderr, "[%s] %s\n", tag ? tag : "", msg);
 	int res = __android_log_buf_write(bufID, priority, tag, msg);
 
 	if (tag != NULL)

@@ -98,6 +98,10 @@ public class Settings {
 			return Uri.withAppendedPath(CONTENT_URI, name);
 		}
 
+		public static String getString(ContentResolver content_resolver, String key) {
+			return Secure.getString(content_resolver, key);
+		}
+
 		protected static Integer getIntOrNull(ContentResolver cr, String key) {
 			switch (key) {
 				case "accelerometer_rotation":

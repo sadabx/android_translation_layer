@@ -33,6 +33,4 @@ public class RadioButton extends CompoundButton {
 	public void setOnClickListener(final OnClickListener l) {}
 	@Override
 	public void setTextColor(int color) {}
-	@Override
-	public void setTextSize(float size) {}
 }

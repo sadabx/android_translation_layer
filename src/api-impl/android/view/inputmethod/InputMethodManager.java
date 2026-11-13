@@ -12,6 +12,21 @@ public class InputMethodManager {
 
 	private ArrayList<InputMethodInfo> input_method_list = new ArrayList<InputMethodInfo>();
 
+	public static final int SHOW_IMPLICIT = 0x0001;
+	public static final int SHOW_FORCED = 0x0002;
+	public static final int HIDE_IMPLICIT_ONLY = 0x0001;
+	public static final int HIDE_NOT_ALWAYS = 0x0002;
+
+	public void toggleSoftInput(int showFlags, int hideFlags) {
+		if (activeView != null) {
+			showSoftInput(activeView, showFlags);
+		}
+	}
+
+	public void toggleSoftInputFromWindow(IBinder windowToken, int showFlags, int hideFlags) {
+		toggleSoftInput(showFlags, hideFlags);
+	}
+
 	public boolean hideSoftInputFromWindow(IBinder windowToken, int flags) {
 		nativeHideSoftInput(im_context);
 		activeView = null;
