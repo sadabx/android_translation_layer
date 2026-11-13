@@ -11,7 +11,7 @@
 #### philosophy
 
 companion infographic for this section:
-`assets/android_translation_architecture.svg`
+`doc/assets/android_translation_architecture.svg`
 
 We believe that the cleanest approach for supporting android apps on desktop
 Linux platforms is to make a chirurgical cut on the android platform stack

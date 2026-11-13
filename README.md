@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="ATL Logo" width="128"/>
+  <img src="doc/assets/logo.svg" alt="ATL Logo" width="128"/>
 </p>
 
 # Android Translation Layer (ATL)
@@ -9,13 +9,13 @@
 A lightweight translation layer that allows running Android apps natively on a Linux desktop—without virtual machines, emulation containers, or a full AOSP rootfs.
 
 <p align="center">
-  <img src="assets/screenshot.png" alt="Angry Birds, Worms 2, and Gravity Defied running side by side on Linux" width="85%"/>
+  <img src="doc/assets/screenshot.png" alt="Angry Birds, Worms 2, and Gravity Defied running side by side on Linux" width="85%"/>
   <br/>
   <em>Angry Birds 3.2.0, Worms 2 Armageddon, and Gravity Defied running side by side on Linux desktop</em>
 </p>
 
 <p align="center">
-  <img src="assets/screenshot_2.png" alt="Oculus Quest version of BeatSaber running on an aarch64 laptop" width="85%"/>
+  <img src="doc/assets/screenshot_2.png" alt="Oculus Quest version of BeatSaber running on an aarch64 laptop" width="85%"/>
   <br/>
   <em>Oculus Quest version of BeatSaber running on an aarch64 laptop</em>
 </p>
@@ -57,7 +57,7 @@ To keep this overview clean, detailed documentation has been organized into dedi
 | :--- | :--- |
 | **[Usage Guide](doc/Usage.md)** | Running standard APKs, split APKs, launching specific activities, and desktop integration (`--install`). |
 | **[Build Guide](doc/Build.md)** | Step-by-step compilation instructions for Arch, Ubuntu/Debian, Fedora, and Alpine. |
-| **[Architecture](doc/Architecture.md)** | Deep-dive into execution flow, cut points, and [architecture diagrams](assets/android_translation_architecture.svg). |
+| **[Architecture](doc/Architecture.md)** | Deep-dive into execution flow, cut points, and [architecture diagrams](doc/assets/android_translation_architecture.svg). |
 | **[Environment Variables](doc/Envs.md)** | Reference for all runtime environment variables and debug options. |
 | **[Troubleshooting](doc/Troubleshooting.md)** | Graphics settings (X11 EGL, Cairo fallback), Apple Silicon 16KB pages, and native bridges. |
 | **[Contributing & Stubs](doc/QuickHelp.md)** | How to implement missing Android APIs and contribute stubs. |
